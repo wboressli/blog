@@ -2,24 +2,24 @@ from __future__ import unicode_literals
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import Post
+from django.shortcuts import get_object_or_404
 
 def post_list(request):
-    object_list = Post.objects.get(title="re")
+    obj_list = Post.objects.all()
     context = {
-    "object_list": object_list,
-    "title": "List",
-    "user": request.user
+       "post_list": obj_list
     }
     return render(request, 'post_list.html', context)
 
 def post_create(request):
     return HttpResponse("<h1> Create </h1>")
 
-def post_detail(request):
-    return HttpResponse("<h1> Detail </h1>")
-
-def post_list(request):
-    return HttpResponse("<h1> List </h1>")
+def post_detail(request, post_id):
+    obj_detail = get_object_or_404(Post, id=post_id)
+    context = {
+       "instance": obj_detail
+    }
+    return render(request, "post_detail.html", context)
 
 def post_update(request):
     return HttpResponse("<h1> Update </h1>")

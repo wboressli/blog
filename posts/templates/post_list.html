@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>List</title>
+</head>
+<body>
+<ol>
+{% for x in post_list %}
+    <a href="{{x.get_absolute_url}}"><li>{{x.title}}</li></a>
+    <li>{{x}}</li>
+
+ {% endfor %}
+</ol>
+</body>
+</html>
