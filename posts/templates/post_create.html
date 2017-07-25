@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Post List</title>
+   
+    <title>So bored</title>
 </head>
 <body>
-    <h1>The Post {{title}} Page</h1>
-    {% for object in object_list %}
-        {{object.title}} <br>
-        {{object.content}} <br>
-        {{object.timestamp}} <br>
-        {{object.updated}} <br>
-        {{object.id}} <br>
-    {% endfor %}
+<form method='POST' action="{% url 'posts:create' %}">
+    {% csrf_token %}
+   {{form.as_p}}
+   
+<input type="submit" value="Create Post">
+</form>
+
 </body>
 </html>

@@ -15,9 +15,4 @@ class Post(models.Model):
 		return reverse("posts:detail", kwargs={"post_id": self.id})
 
 
-class Pizza(models.Model):
-	editor_name = models.CharField(max_length=20)
-	birth_date = models.DateField()
 
-	def __str__(self):
-		return self,editor_name
