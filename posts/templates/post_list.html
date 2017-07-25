@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>List</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block head_title %}List{% endblock head_title %}
+
+{% block content %}
 {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -17,5 +16,4 @@
     
  {% endfor %}
 </ol>
-</body>
-</html>
+{% endblock content %}

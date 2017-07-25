@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Update</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block head_title %}Update{% endblock head_title %}
+
+{% block content %}
    <form method= "POST" action="{% url'post:update' post_id=post_object.id %}">
    {% csrf_token %}
    {{form.as_p}}
    <input type="submit" value="Update Post">
    </form> 
-
-
-</body>
-</html>
+{% endlock content %}
