@@ -5,37 +5,83 @@ from .forms import PostForm
 from .models import Post
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from urllib.parse import quote
+from django.http import Http404
+from django.utils import timezone
+from django.db.models import Q
 
 def post_list(request):
-    obj_list = Post.objects.all()
+    today = timezone.now().date()
+
+    if request.user.is_staff or request.user.is_superuser:
+        object_list = Post.objects.all()
+    else:
+        object_list = Post.objects.filter(draft=False).filter(publish__lte=today)
+    query = request.GET.get("q")
+    if query:
+        object_list = object_list.filter(
+        Q(title__icontains=query)|
+        Q(content__icontains=query)|
+        Q(author__first_name__icontains=query)|
+        Q(author__last_name__icontains=query)
+        ).distinct()
+
+#.order_by("-timestamp","-updated")
+    paginator = Paginator(object_list, 5) # Show 5 contacts per page
+    page = request.GET.get('page')
+    try:
+        obj= paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        obj= paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        obj= paginator.page(paginator.num_pages)
     context = {
-       "post_list": obj_list
+    "object_list": obj,
+    "title": "List",
+    "user": request.user,
+    "today": today,
     }
     return render(request, 'post_list.html', context)
 
-def post_detail(request, post_id):
-    obj_detail = get_object_or_404(Post, id=post_id)
+def post_detail(request, post_slug):
+    obj = get_object_or_404(Post, slug=post_slug)
+    date = timezone.now().date()
+
+    if obj.publish > timezone.now().date() or obj.draft:
+        if not (request.user.is_staff or request.user.is_superuser):
+            raise Http404
     context = {
-       "instance": obj_detail
+       "instance": obj,
     }
     return render(request, "post_detail.html", context)
 
-def post_update(request, post_id):
-    post_object = get_object_or_404(Post, id=post_id)
-    form = PostForm(request.POST or None, instance=post_object)
+def post_update(request, post_slug):
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise Http404
+    instance = get_object_or_404(Post, slug=post_slug)
+    post_object = get_object_or_404(Post, slug=post_slug)
+    form = PostForm(request.POST or None, request.FILES or None, instance=instance)
     if form.is_valid():
         form.save()
         messages.success(request, "Wanna try again?")
         return redirect("posts:list")
     context = {
        "form":form,
-       "post_object":post_object,
+       "instance": instance,
+       "title": "Update",
+    
        }
     return render (request, 'post_update.html', context)
     
 
-def post_delete(request, post_id):
-    obj = Post.object.get(id =post_id).delete()
+def post_delete(request, post_slug):
+    if not (request.user.is_superuser):
+        raise Http404
+    instance = get_object_or_404(Post, slug=post_slug)
+    instance.delete()
     messages.warning(request, "Busted!")
     return redirect ("posts:list")
 
@@ -43,9 +89,13 @@ def post_home(request):
 	return HttpResponse("<h1> Hello</h1>")
 
 def post_create(request):
-    form = PostForm(request.POST or None)
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise Http404
+    form = PostForm(request.POST or None, request.FILES or None)
     if form.is_valid():
-        form.save()
+        obj = form.save(commit=False)
+        obj.author = request.user
+        obj.save()
         messages.success(request, "Way to go!")
         return redirect ("posts:list")
     context = {

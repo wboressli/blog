@@ -1,19 +1,71 @@
 {% extends "base.html" %}
 
-{% block head_title %}List{% endblock head_title %}
+{% block title %}
+{{title}}
+{% endblock title %}
 
 {% block content %}
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-<ol>
-{% for x in post_list %}
-    <a href="{{x.get_absolute_url}}"><li>{{x.title}}</li></a>
-    
- {% endfor %}
-</ol>
+
+<h1>{{title}}</h1>
+<div class="row">
+
+<form action="{% url 'posts:list' %}" method="GET">
+      <input type="text" name="q" placeholder="Search posts here" value="{{request.GET.q}}">
+      <input type="submit" name="q" value="Clear">
+         <a href="?page={{ object_list.page_number }}" class= "btn btn-primary" Clear Search</a>
+      <input type="submit" value="Search">
+
+</form>
+
+
+{% for x in object_list %}
+   <div class="col-sm-6 col-sm-offset-3">
+       <div class="thumbnail">
+           {% if x.image %}
+             <img src="{{x.image.url}}" class="img-responsive">
+             {% endif %}
+          <div class="caption">
+             <h3>{{x.title}}<small>{{x.publish|timesince}} ago</small></h3>
+
+             {% if x.draft %} <h4>Draft</h4>{% endif%}
+             {% if x.publish > today %}<h4>Future Blog Post</h4> {% endif %}
+
+             <p>{{x.content|linebreaks|truncatechars:10}}</p>
+
+             Author: {{instance.author.get_full_name}}
+
+             <p>
+               <a href="{{x.get_absolute_url}}" class="btn btn-primary">View</a>
+
+               <a href="{% url 'posts:update' post_slug=x.slug %}" class="btn btn-success">Edit</a>
+               <a href="{% url 'posts:delete' post_slug=x.slug %}" class="btn btn-danger">Delete</a>
+             </p>
+
+           </div>
+       </div>
+    </div>
+
+        <h1>{{instance.title}} <small>{{instance.timestamp}}</small></h1>
+        {{instance.content| linebreaks}}
+
+    </div>
+{% endfor %}
+</div>
+
+<div class="pagination">
+   <span class="step-links">
+      {% if object_list.has_previous %}
+         <a href="?page={{ object_list.previous_page_number }}&q={{request.GET.q}}">previous</a>
+      {% endif %}
+
+      <span class="current">
+          Page {{ object_list.number }} of {{object_list.paginator.num_pages }}.
+      </span>
+
+      {% if object_list.has_next %}
+         <a href="?page={{ object_list.next_page_number }}">next</a> 
+      {% endif %}
+    </span>
+    </div>
+
 {% endblock content %}
