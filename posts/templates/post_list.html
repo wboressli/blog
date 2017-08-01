@@ -17,9 +17,9 @@
 
 </form>
 
-
+ <div class="col-sm-6 col-sm-offset-3">
 {% for x in object_list %}
-   <div class="col-sm-6 col-sm-offset-3">
+  
        <div class="thumbnail">
            {% if x.image %}
              <img src="{{x.image.url}}" class="img-responsive">
@@ -43,7 +43,7 @@
 
            </div>
        </div>
-    </div>
+  </div>
 
         <h1>{{instance.title}} <small>{{instance.timestamp}}</small></h1>
         {{instance.content| linebreaks}}

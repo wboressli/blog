@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from .forms import PostForm
+from .forms import PostForm, UserSignUp, UserLogin
 from .models import Post
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -10,6 +10,58 @@ from urllib.parse import quote
 from django.http import Http404
 from django.utils import timezone
 from django.db.models import Q
+from django.contrib.auth import authenticate, login, logout
+
+
+def usersignup(request):
+    context = {}
+    form = UserSignUp()
+    context['form'] = form
+    if request.method == "POST":
+        form = UserSignUp(request.POST)
+        if form.is_valid():
+            
+            user = form.save(commit=False)
+            username = user.username
+            password = user.password
+            user.set_password(password)
+            user.save()
+            auth_user = authenticate(username=username, password=password)
+            login(request, auth_user)
+
+            return redirect("posts:list")
+        messages.error(request, form.errors)
+        return redirect("posts:signup")
+    return render(request, 'signup.html', context)
+
+def userlogout(request):
+    logout(request)
+    return redirect("posts:login")
+
+def userlogin(request):
+    context = {}
+    form = UserLogin()
+    context['form'] = form
+    if request.method == "POST":
+        form = UserLogin(request.POST)
+        if form.is_valid():
+        
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            # user.set_password(password)
+            # user.save()
+            # auth_user = authenticate(username=username, password=password)
+            # login(request, auth_user)
+            auth_user = authenticate(username=username, password=password)
+            if auth_user is not None:
+                login(request, auth_user)
+                return redirect("posts:list")
+
+            messages.warning(request, "Wrong username/password combo. Go at it again!")
+            return redirect("posts:login")
+        messages.warning(request, form.errors)
+        return redirect("posts:login")
+    return render(request,'login.html', context)
 
 def post_list(request):
     today = timezone.now().date()
@@ -86,7 +138,7 @@ def post_delete(request, post_slug):
     return redirect ("posts:list")
 
 def post_home(request):
-	return HttpResponse("<h1> Hello</h1>")
+    return HttpResponse("<h1> Hello</h1>")
 
 def post_create(request):
     if not (request.user.is_staff or request.user.is_superuser):
