@@ -1,5 +1,5 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
+
+cache__/
 *.py[cod]
 *$py.class
 
@@ -97,4 +97,5 @@ ENV/
 
 # mypy
 .mypy_cache/
-*.pyc
+
+
